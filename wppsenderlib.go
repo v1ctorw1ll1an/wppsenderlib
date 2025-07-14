@@ -2,6 +2,7 @@ package wppsenderlib
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -50,13 +51,28 @@ func SendSynchronousMessage(wppSender *WppSender) (string, error) {
 	res, err := http.DefaultClient.Do(req)
 
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("falha ao enviar requisição para API wts.chat: %w", err)
 	}
 
 	defer res.Body.Close()
-	body, _ := io.ReadAll(res.Body)
+	bodyBytes, err := io.ReadAll(res.Body)
 
-	return string(body), nil
+	if err != nil {
+		return "", fmt.Errorf("falha ao ler resposta da API wts.chat: %w", err)
+	}
+
+	var jsonData map[string]any
+	err = json.Unmarshal(bodyBytes, &jsonData)
+
+	if err != nil {
+		return "", fmt.Errorf("falha ao decodificar resposta da API wts.chat: %w", err)
+	}
+
+	if res.StatusCode < 200 || res.StatusCode > 299 || jsonData["status"] != "SENT" {
+		return "", fmt.Errorf("API wts.chat retornou status %d: %s", res.StatusCode, jsonData["status"])
+	}
+
+	return fmt.Sprintf("Mensagem enviada com sucesso para %s (From: %s)", wppSender.Payload.To, wppSender.Payload.From), nil
 }
 
 func buildPayload(payload *Payload) (string, error) {
