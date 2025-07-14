@@ -25,7 +25,7 @@ func Test_sendMessage(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		want := `{"From":"5511911111111","To":"5522922222222","PayloadBody":{"Parameters":null,"TemplateId":"template_id_xpto"}}`
+		want := `{"from":"5511911111111","to":"5522922222222","body":{"parameters":null,"templateId":"template_id_xpto"}}`
 		got := payload
 
 		if got != want {
@@ -44,7 +44,7 @@ func Test_sendMessage(t *testing.T) {
 			}
 
 			body, _ := io.ReadAll(r.Body)
-			expected := `{"From":"5511911111111","To":"5522922222222","PayloadBody":{"Parameters":null,"TemplateId":"template_id_xpto"}}`
+			expected := `{"from":"5511911111111","to":"5522922222222","body":{"parameters":null,"templateId":"template_id_xpto"}}`
 			if string(body) != expected {
 				t.Errorf("unexpected payload: got %s, want %s", body, expected)
 			}

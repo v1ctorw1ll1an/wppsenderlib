@@ -18,7 +18,7 @@ type Payload struct {
 	From        string         `json:"from"`
 	To          string         `json:"to"`
 	Options     map[string]any `json:"options,omitempty"`
-	PayloadBody *PayloadBody   `json:"payloadBody"`
+	PayloadBody *PayloadBody   `json:"body"`
 }
 
 type WppSender struct {
