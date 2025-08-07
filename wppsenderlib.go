@@ -84,10 +84,16 @@ func SendSynchronousMessage(wppSender *WppSender) (string, error) {
 		return "", fmt.Errorf("falha ao decodificar resposta da API wts.chat: %w", err)
 	}
 
-	// Verificação mais segura do status
-	status, ok := jsonData["status"].(string)
-	if res.StatusCode < 200 || res.StatusCode > 299 || !ok || status != "SENT" {
-		return "", fmt.Errorf("API wts.chat retornou status %d: bodyBytes: %v", res.StatusCode, string(bodyBytes))
+	// Verificar campo failedReason
+	if fr, exists := jsonData["failedReason"]; exists && fr != nil {
+		if reasonStr, ok := fr.(string); ok && reasonStr != "" {
+			return "", fmt.Errorf("falha na API wts.chat: %s", reasonStr)
+		}
+	}
+
+	// Verificar status HTTP
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return "", fmt.Errorf("API wts.chat retornou status %d: %s", res.StatusCode, string(bodyBytes))
 	}
 
 	return fmt.Sprintf("Mensagem enviada com sucesso para %s (From: %s)", wppSender.Payload.To, wppSender.Payload.From), nil
